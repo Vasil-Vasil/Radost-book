@@ -85,6 +85,15 @@ body {
 .message.show {
     opacity: 1;
     transform: scale(1);
+    filter: drop-shadow(0 0 10px rgba(255,255,255,0.4));
+}
+    body {
+    opacity: 0;
+    transition: opacity 0.6s ease-in-out;
+}
+
+body.loaded {
+    opacity: 1;
 }
 </style>
 </head>
@@ -93,12 +102,34 @@ body {
 
 <div class="scene" id="scene"></div>
 <div class="message" id="msg">Честита 30-годишнина, Радост!</div>
-
+<!-- AUDIO ELEMENTS -->
+<audio id="tapSound" src="https://assets.mixkit.co/sfx/preview/mixkit-light-paper-page-turn-1073.mp3"></audio>
+<audio id="finalSound" src="https://assets.mixkit.co/sfx/preview/mixkit-soft-piano-logo-1359.mp3"></audio>
+    
 <script>
 const scene = document.getElementById("scene");
 const msg = document.getElementById("msg");
 
+const tapSound = document.getElementById("tapSound");
+const finalSound = document.getElementById("finalSound");
+
 const total = 30;
+
+/* NFC CLEAN RESTART + FADE-IN */
+(function () {
+
+    sessionStorage.clear();
+    localStorage.clear();
+
+    window.addEventListener("pageshow", function(event) {
+        if (event.persisted) location.reload();
+    });
+
+    window.addEventListener("load", function() {
+        document.body.classList.add("loaded");
+    });
+
+})();
 
 /* CREATE PAGES */
 for (let i = 1; i <= total; i++) {
@@ -106,17 +137,34 @@ for (let i = 1; i <= total; i++) {
     page.className = "page";
     page.textContent = i;
 
-    /* staggered timing for wave effect */
     page.style.animation = `fanFlip 1.2s ease-in-out forwards`;
     page.style.animationDelay = `${i * 0.08}s`;
 
+    /* 🎬 MOTION BLUR ILLUSION */
+    page.style.filter = "blur(0px)";
+    page.style.transform += " translateZ(0)";
+
     scene.appendChild(page);
+
+    /* 📖 PAGE TURN SOUND (staggered) */
+    setTimeout(() => {
+        tapSound.currentTime = 0;
+        tapSound.play();
+    }, i * 80);
 }
 
-/* SHOW FINAL TEXT */
+/* 💡 FINAL REVEAL (BLOOM + SOUND) */
 setTimeout(() => {
+
     msg.classList.add("show");
-}, total * 80 + 800);
+
+    // bloom effect
+    msg.style.textShadow = "0 0 20px rgba(255,255,255,0.6), 0 0 40px rgba(255,215,150,0.4)";
+
+    // soft piano
+    finalSound.play();
+
+}, total * 80 + 900);
 </script>
 
 </body>
