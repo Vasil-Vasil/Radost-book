@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8">
+<title>Radost Fan Book</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+
+<style>
+body {
+    margin: 0;
+    background: #f5f5f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* CONTAINER */
+.scene {
+    position: relative;
+    width: 400px;
+    height: 400px;
+    perspective: 2000px;
+}
+
+/* PAGE */
+.page {
+    position: absolute;
+    width: 220px;
+    height: 300px;
+    left: 90px;
+    top: 50px;
+
+    background: linear-gradient(135deg, #fffef8, #f3e9d2);
+    border-radius: 10px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-family: 'Great Vibes', cursive;
+    font-size: 60px;
+    color: #333;
+
+    transform-origin: bottom left;
+    opacity: 0;
+
+    box-shadow: 0 15px 30px rgba(0,0,0,0.25);
+}
+
+/* FAN ANIMATION */
+@keyframes fanFlip {
+    0% {
+        transform: rotate(0deg) rotateY(0deg) skewY(0deg) scale(1);
+        opacity: 0;
+    }
+    20% {
+        opacity: 1;
+    }
+    50% {
+        transform: rotate(-25deg) rotateY(-60deg) skewY(8deg) scale(0.95);
+    }
+    100% {
+        transform: rotate(-70deg) rotateY(-180deg) skewY(15deg) scale(0.85);
+        opacity: 0;
+    }
+}
+
+/* MESSAGE */
+.message {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    top: 45%;
+    font-size: 44px;
+    font-family: 'Great Vibes', cursive;
+    color: #222;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all 1s ease;
+}
+
+.message.show {
+    opacity: 1;
+    transform: scale(1);
+}
+</style>
+</head>
+
+<body>
+
+<div class="scene" id="scene"></div>
+<div class="message" id="msg">Честита 30-годишнина, Радост!</div>
+
+<script>
+const scene = document.getElementById("scene");
+const msg = document.getElementById("msg");
+
+const total = 30;
+
+/* CREATE PAGES */
+for (let i = 1; i <= total; i++) {
+    const page = document.createElement("div");
+    page.className = "page";
+    page.textContent = i;
+
+    /* staggered timing for wave effect */
+    page.style.animation = `fanFlip 1.2s ease-in-out forwards`;
+    page.style.animationDelay = `${i * 0.08}s`;
+
+    scene.appendChild(page);
+}
+
+/* SHOW FINAL TEXT */
+setTimeout(() => {
+    msg.classList.add("show");
+}, total * 80 + 800);
+</script>
+
+</body>
+</html>
