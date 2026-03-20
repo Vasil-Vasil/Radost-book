@@ -2,22 +2,29 @@
 <html lang="bg">
 <head>
 <meta charset="UTF-8">
-<title>Radost Fan Book</title>
+<title>Radost Cinematic</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
 
 <style>
 body {
     margin: 0;
-    background: #f5f5f5;
+    background: radial-gradient(circle at center, #fdfaf3, #f1e6c9);
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
     overflow: hidden;
+
+    opacity: 0;
+    transition: opacity 1s ease;
 }
 
-/* CONTAINER */
+body.loaded {
+    opacity: 1;
+}
+
+/* SCENE */
 .scene {
     position: relative;
     width: 400px;
@@ -34,7 +41,7 @@ body {
     top: 50px;
 
     background: linear-gradient(135deg, #fffef8, #f3e9d2);
-    border-radius: 10px;
+    border-radius: 12px;
 
     display: flex;
     align-items: center;
@@ -47,24 +54,28 @@ body {
     transform-origin: bottom left;
     opacity: 0;
 
-    box-shadow: 0 15px 30px rgba(0,0,0,0.25);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.25);
 }
 
-/* FAN ANIMATION */
+/* MASTER ANIMATION */
 @keyframes fanFlip {
     0% {
         transform: rotate(0deg) rotateY(0deg) skewY(0deg) scale(1);
         opacity: 0;
+        filter: blur(8px);
     }
     20% {
         opacity: 1;
+        filter: blur(3px);
     }
     50% {
-        transform: rotate(-25deg) rotateY(-60deg) skewY(8deg) scale(0.95);
+        transform: rotate(-35deg) rotateY(-80deg) skewY(12deg) scale(0.9);
+        filter: blur(1px);
     }
     100% {
-        transform: rotate(-70deg) rotateY(-180deg) skewY(15deg) scale(0.85);
+        transform: rotate(var(--final-rotate, -80deg)) rotateY(-180deg) skewY(20deg) scale(0.82);
         opacity: 0;
+        filter: blur(5px);
     }
 }
 
@@ -74,26 +85,50 @@ body {
     width: 100%;
     text-align: center;
     top: 45%;
-    font-size: 44px;
+    font-size: 48px;
     font-family: 'Great Vibes', cursive;
-    color: #222;
+    color: #000;
+
     opacity: 0;
     transform: scale(0.8);
-    transition: all 1s ease;
 }
 
+/* INK WRITING EFFECT */
 .message.show {
-    opacity: 1;
-    transform: scale(1);
-    filter: drop-shadow(0 0 10px rgba(255,255,255,0.4));
-}
-    body {
-    opacity: 0;
-    transition: opacity 0.6s ease-in-out;
+    animation: writeIn 2s ease forwards;
 }
 
-body.loaded {
-    opacity: 1;
+@keyframes writeIn {
+    0% {
+        opacity: 0;
+        letter-spacing: 10px;
+        filter: blur(10px);
+    }
+    50% {
+        opacity: 1;
+        letter-spacing: 2px;
+        filter: blur(2px);
+    }
+    100% {
+        opacity: 1;
+        letter-spacing: 0px;
+        filter: blur(0px);
+        text-shadow:
+            0 0 10px rgba(255,255,255,0.9),
+            0 0 25px rgba(255,215,150,0.7),
+            0 0 60px rgba(255,200,120,0.5);
+    }
+}
+
+/* GOLD PARTICLES */
+.particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: gold;
+    border-radius: 50%;
+    opacity: 0.8;
+    pointer-events: none;
 }
 </style>
 </head>
@@ -102,22 +137,22 @@ body.loaded {
 
 <div class="scene" id="scene"></div>
 <div class="message" id="msg">Честита 30-годишнина, Радост!</div>
-<!-- AUDIO ELEMENTS -->
-<audio id="tapSound" src="https://assets.mixkit.co/sfx/preview/mixkit-light-paper-page-turn-1073.mp3"></audio>
-<audio id="finalSound" src="https://assets.mixkit.co/sfx/preview/mixkit-soft-piano-logo-1359.mp3"></audio>
-    
+
+<!-- AUDIO -->
+<audio id="flipSound" src="https://assets.mixkit.co/sfx/preview/mixkit-light-paper-page-turn-1073.mp3"></audio>
+<audio id="pianoSound" src="https://assets.mixkit.co/sfx/preview/mixkit-soft-piano-logo-1359.mp3"></audio>
+
 <script>
 const scene = document.getElementById("scene");
 const msg = document.getElementById("msg");
 
-const tapSound = document.getElementById("tapSound");
-const finalSound = document.getElementById("finalSound");
+const flipSound = document.getElementById("flipSound");
+const pianoSound = document.getElementById("pianoSound");
 
 const total = 30;
 
-/* NFC CLEAN RESTART + FADE-IN */
+/* NFC CLEAN START */
 (function () {
-
     sessionStorage.clear();
     localStorage.clear();
 
@@ -128,7 +163,6 @@ const total = 30;
     window.addEventListener("load", function() {
         document.body.classList.add("loaded");
     });
-
 })();
 
 /* CREATE PAGES */
@@ -137,34 +171,63 @@ for (let i = 1; i <= total; i++) {
     page.className = "page";
     page.textContent = i;
 
-    page.style.animation = `fanFlip 1.2s ease-in-out forwards`;
-    page.style.animationDelay = `${i * 0.08}s`;
+    // 🎲 slight randomness (human feel)
+    const randomDelay = (Math.random() * 0.03);   // ±0.03s
+    const randomDuration = 1.45 + (Math.random() * 0.15); // 1.45–1.6s
+    const randomRotate = -75 - (Math.random() * 5); // slight angle variation
 
-    /* 🎬 MOTION BLUR ILLUSION */
-    page.style.filter = "blur(0px)";
-    page.style.transform += " translateZ(0)";
+    // apply animation
+    page.style.animation = `fanFlip ${randomDuration}s cubic-bezier(.65,.05,.36,1) forwards`;
+    page.style.animationDelay = `${(i * 0.13) + randomDelay}s`;
 
+    // 🎯 subtle variation in final angle (feels real)
+    page.style.setProperty('--final-rotate', `${randomRotate}deg`);
+    page.style.zIndex = total - i;
     scene.appendChild(page);
 
-    /* 📖 PAGE TURN SOUND (staggered) */
     setTimeout(() => {
-        tapSound.currentTime = 0;
-        tapSound.play();
-    }, i * 80);
+        flipSound.currentTime = 0;
+        flipSound.play().catch(()=>{});
+    }, (i * 65) + (Math.random() * 40));
 }
 
-/* 💡 FINAL REVEAL (BLOOM + SOUND) */
+/* GOLD PARTICLES */
+function createParticle() {
+    const p = document.createElement("div");
+    p.className = "particle";
+
+    p.style.left = Math.random() * window.innerWidth + "px";
+    p.style.top = Math.random() * window.innerHeight + "px";
+
+    document.body.appendChild(p);
+
+    let life = 100;
+
+    const interval = setInterval(() => {
+        p.style.transform = `translateY(-${life}px)`;
+        p.style.opacity = life / 100;
+
+        life--;
+
+        if (life <= 0) {
+            p.remove();
+            clearInterval(interval);
+        }
+    }, 16);
+}
+
+/* FINAL REVEAL */
 setTimeout(() => {
 
     msg.classList.add("show");
+    pianoSound.play().catch(()=>{});
 
-    // bloom effect
-    msg.style.textShadow = "0 0 20px rgba(255,255,255,0.6), 0 0 40px rgba(255,215,150,0.4)";
+    // particles burst
+    for (let i = 0; i < 40; i++) {
+        setTimeout(createParticle, i * 30);
+    }
 
-    // soft piano
-    finalSound.play();
-
-}, total * 80 + 900);
+}, total * 130 + 1000);
 </script>
 
 </body>
